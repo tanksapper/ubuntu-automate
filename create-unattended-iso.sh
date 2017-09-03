@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# file names & paths
+# File names & paths
 tmp="$HOME"  # destination folder to store the final iso file
 hostname="ubuntu"
 currentuser="$( whoami)"
 
-# define spinner function for slow tasks
-# courtesy of http://fitnr.com/showing-a-bash-spinner.html
+# Define spinner function for slow tasks
+# Courtesy of http://fitnr.com/showing-a-bash-spinner.html
 spinner()
 {
     local pid=$1
@@ -22,8 +22,8 @@ spinner()
     printf "    \b\b\b\b"
 }
 
-# define download function
-# courtesy of http://fitnr.com/showing-file-download-progress-using-wget.html
+# Define download function
+# Courtesy of http://fitnr.com/showing-file-download-progress-using-wget.html
 download()
 {
     local url=$1
@@ -34,8 +34,8 @@ download()
     echo " DONE"
 }
 
-# define function to check if program is installed
-# courtesy of https://gist.github.com/JamieMason/4761049
+# Define function to check if program is installed
+# Courtesy of https://gist.github.com/JamieMason/4761049
 function program_is_installed {
     # set to 1 initially
     local return_=1
@@ -45,20 +45,20 @@ function program_is_installed {
     echo $return_
 }
 
-# print a pretty header
+# Print a pretty header
 echo
 echo " +---------------------------------------------------+"
 echo " |            UNATTENDED UBUNTU ISO MAKER            |"
 echo " +---------------------------------------------------+"
 echo
 
-# ask if script runs without sudo or root priveleges
+# Check for root
 if [ $currentuser != "root" ]; then
-    echo " you run this without sudo privileges or not as root"
+    echo "This script requires root."
     exit 1
 fi
 
-#check that we are in ubuntu 16.04
+# Check that 16.04 is being used
 
 fgrep "16.04" /etc/os-release >/dev/null 2>&1
 
@@ -66,7 +66,7 @@ if [ $? -eq 0 ]; then
      ub1604="yes"
 fi
 
-#get the latest versions of Ubuntu LTS
+# Get the latest versions of Ubuntu LTS
 
 tmphtml=$tmp/tmphtml
 rm $tmphtml >/dev/null 2>&1
@@ -80,13 +80,13 @@ xenn=$(fgrep Xenial $tmphtml | head -1 | awk '{print $3}')
 
 # ask whether to include vmware tools or not
 while true; do
-    echo " which ubuntu edition would you like to remaster:"
+    echo " Which ubuntu edition would you like to remaster?"
     echo
     echo "  [1] Ubuntu $prec LTS Server amd64 - Precise Pangolin"
     echo "  [2] Ubuntu $trus LTS Server amd64 - Trusty Tahr"
     echo "  [3] Ubuntu $xenn LTS Server amd64 - Xenial Xerus"
     echo
-    read -p " please enter your preference: [1|2|3]: " ubver
+    read -p " Please enter your preference: [1|2|3]: " ubver
     case $ubver in
         [1]* )  download_file="ubuntu-$prec-server-amd64.iso"           # filename of the iso to be downloaded
                 download_location="http://releases.ubuntu.com/$prec/"     # location of the file to be downloaded
@@ -100,7 +100,7 @@ while true; do
                 download_location="http://releases.ubuntu.com/$xenn/"
                 new_iso_name="ubuntu-$xenn-server-amd64-unattended.iso"
                 break;;
-        * ) echo " please answer [1], [2] or [3]";;
+        * ) echo " Please answer [1], [2] or [3]";;
     esac
 done
 
@@ -113,26 +113,26 @@ else
   timezone=`find /usr/share/zoneinfo/ -type f -exec md5sum {} \; | grep "^$checksum" | sed "s/.*\/usr\/share\/zoneinfo\///" | head -n 1`
 fi
 
-# ask the user questions about his/her preferences
-read -ep " please enter your preferred timezone: " -i "${timezone}" timezone
-read -ep " please enter your preferred username: " -i "hammer" username
-read -sp " please enter your preferred password: " password
+# User Preferences
+read -ep "Please enter your preferred timezone: " -i "${timezone}" timezone
+read -ep "Please enter your preferred username: " -i "hammer" username
+read -sp "Please enter your preferred password: " password
 printf "\n"
-read -sp " confirm your preferred password: " password2
+read -sp "Confirm your preferred password: " password2
 printf "\n"
-read -ep " Make ISO bootable via USB: " -i "yes" bootable
+read -ep "Make ISO bootable via USB? " -i "yes" bootable
 
-# check if the passwords match to prevent headaches
+# Check if the passwords match to prevent headaches
 if [[ "$password" != "$password2" ]]; then
-    echo " your passwords do not match; please restart the script and try again"
+    echo "Your passwords do not match. Please restart the script and try again."
     echo
     exit
 fi
 
-# download the ubunto iso. If it already exists, do not delete in the end.
+# Download the ubunto iso. If it already exists, do not delete in the end.
 cd $tmp
 if [[ ! -f $tmp/$download_file ]]; then
-    echo -n " downloading $download_file: "
+    echo -n "Downloading - $download_file: "
     download "$download_location$download_file"
 fi
 if [[ ! -f $tmp/$download_file ]]; then
@@ -144,15 +144,15 @@ if [[ ! -f $tmp/$download_file ]]; then
 	exit 1
 fi
 
-# download ubuntu seed file
+# Download ubuntu seed file
 seed_file="ubuntu.seed"
 if [[ ! -f $tmp/$seed_file ]]; then
-    echo -n " downloading $seed_file: "
+    echo -n "Downloading - $seed_file: "
     download "https://git.cyanlab.io/tylerhammer/ubuntu-automated-install/raw/master/ubuntu.seed"
 fi
 
-# install required packages
-echo " installing required packages"
+# Install required packages
+echo "Installing required packages"
 if [ $(program_is_installed "mkpasswd") -eq 0 ] || [ $(program_is_installed "mkisofs") -eq 0 ]; then
     (apt-get -y update > /dev/null 2>&1) &
     spinner $!
@@ -173,15 +173,15 @@ if [[ $bootable == "yes" ]] || [[ $bootable == "y" ]]; then
 fi
 
 
-# create working folders
-echo " remastering your iso file"
+# Create working folders
+echo "Remastering your iso file"
 mkdir -p $tmp
 mkdir -p $tmp/iso_org
 mkdir -p $tmp/iso_new
 
 # mount the image
 if grep -qs $tmp/iso_org /proc/mounts ; then
-    echo " image is already mounted, continue"
+    echo "Image is already mounted, continue"
 else
     (mount -o loop $tmp/$download_file $tmp/iso_org > /dev/null 2>&1)
 fi
@@ -240,7 +240,7 @@ sed -i "/label install/ilabel autoinstall\n\
   kernel /install/vmlinuz\n\
   append file=/cdrom/preseed/ubuntu-server.seed initrd=/install/initrd.gz auto=true priority=high preseed/file=/cdrom/preseed/ubuntu.seed preseed/file/checksum=$seed_checksum --" $tmp/iso_new/isolinux/txt.cfg
 
-echo " creating the remastered iso"
+echo "Creating the remastered iso"
 cd $tmp/iso_new
 (mkisofs -D -r -V "CyanLab_UBUNTU" -cache-inodes -J -l -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -o $tmp/$new_iso_name . > /dev/null 2>&1) &
 spinner $!
