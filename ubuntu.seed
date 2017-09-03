@@ -71,6 +71,10 @@ d-i partman-auto/method                                     string      lvm
 d-i partman-auto-lvm/guided_size                            string      max
 d-i partman-partitioning/confirm_write_new_label            boolean     true
 
+# Include Packages
+d-i pkgsel/include string openssh-server build-essential software-properties-common
+d-i pkgsel/upgrade select full-upgrade
+
 # grub boot loader
 d-i grub-installer/only_debian                              boolean     true
 d-i grub-installer/with_other_os                            boolean     true
