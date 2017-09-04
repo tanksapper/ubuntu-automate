@@ -289,8 +289,6 @@ umount ${TMP}/iso_org
 rm -rf ${TMP}/iso_new
 rm -rf ${TMP}/iso_org
 rm -rf ${TMPHTML}
-rm ${TMPHTML}
-rm ${SEED_FILE}
 echo -e "\r\033[K\e[36mCleaning Up ----- Complete\e[0m"
 
 echo
