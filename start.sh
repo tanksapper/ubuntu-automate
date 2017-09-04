@@ -1,146 +1,125 @@
 #!/bin/bash
-set -e
 
-# set defaults
-default_hostname="$(hostname)"
-default_domain="netson.local"
-default_puppetmaster="foreman.netson.nl"
-tmp="/root/"
+USER=${logname}
 
 clear
 
-# check for root privilege
-if [ "$(id -u)" != "0" ]; then
-   echo " this script must be run as root" 1>&2
-   echo
-   exit 1
-fi
-
-# define download function
-# courtesy of http://fitnr.com/showing-file-download-progress-using-wget.html
-download()
-{
-    local url=$1
-    echo -n "    "
-    wget --progress=dot $url 2>&1 | grep --line-buffered "%" | \
-        sed -u -e "s,\.,,g" | awk '{printf("\b\b\b\b%4s", $2)}'
-    echo -ne "\b\b\b\b"
-    echo " DONE"
+# Checking for Root Permissions
+check_your_privilege () {
+    if [[ "$(id -u)" != 0 ]]; then
+        echo -e "\e[91mError: This setup script requires root permissions. Please run the script as root.\e[0m" > /dev/stderr
+        exit 1
+    fi
 }
+check_your_privilege
 
-# determine ubuntu version
-ubuntu_version=$(lsb_release -cs)
+# Ask questions to initialize VM
+echo -e "\e[7mWhat is the hostname of this VM? \e[0m"
+read -p "> " HOSTNAME
 
-# check for interactive shell
-if ! grep -q "noninteractive" /proc/cmdline ; then
-    stty sane
+echo
 
-    # ask questions
-    read -ep " please enter your preferred hostname: " -i "$default_hostname" hostname
-    read -ep " please enter your preferred domain: " -i "$default_domain" domain
+echo -e "\e[7mWhat is the domain of this VM? \e[0m"
+read -p "> " DOMAIN
 
-    # ask whether to add puppetlabs repositories
-    while true; do
-        read -p " do you wish to add the latest puppet repositories from puppetlabs? [y/n]: " yn
-        case $yn in
-            [Yy]* ) include_puppet_repo=1
-                    puppet_deb="puppetlabs-release-"$ubuntu_version".deb"
-                    break;;
-            [Nn]* ) include_puppet_repo=0
-                    puppet_deb=""
-                    puppetmaster="puppet"
-                    break;;
-            * ) echo " please answer [y]es or [n]o.";;
-        esac
-    done
+echo
 
-    if [[ include_puppet_repo ]] ; then
-        # ask whether to setup puppet agent or not
-        while true; do
-            read -p " do you wish to setup the puppet agent? [y/n]: " yn
-            case $yn in
-                [Yy]* ) setup_agent=1
-                        read -ep " please enter your puppet master: " -i "$default_puppetmaster" puppetmaster
-                        break;;
-                [Nn]* ) setup_agent=0
-                        puppetmaster="puppet"
-                        break;;
-                * ) echo " please answer [y]es or [n]o.";;
-            esac
-        done
-    fi
+echo -e "\e[7mWhat is the IP you want to set for this VM? \e[0m"
+read -p "> " STATICIP
 
-fi
+echo
 
-# print status message
-echo " preparing your server; this may take a few minutes ..."
+echo -e "\e[7mWhat is the netmask you want to set for this VM? \e[0m"
+read -p "> " NETMASK
 
-# set fqdn
-fqdn="$hostname.$domain"
+echo
 
-# update hostname
-echo "$hostname" > /etc/hostname
-sed -i "s@ubuntu.ubuntu@$fqdn@g" /etc/hosts
-sed -i "s@ubuntu@$hostname@g" /etc/hosts
-hostname "$hostname"
+echo -e "\e[7mWhat is the gateway you want to set for this VM? \e[0m"
+read -p "> " GATEWAY
 
-# update repos
-apt-get -y update
-apt-get -y upgrade
-apt-get -y dist-upgrade
-apt-get -y autoremove
-apt-get -y purge
+echo
 
-# install puppet
-if [[ include_puppet_repo -eq 1 ]]; then
-    # install puppet repo
-    wget https://apt.puppetlabs.com/$puppet_deb -O $tmp/$puppet_deb
-    dpkg -i $tmp/$puppet_deb
-    apt-get -y update
-    rm $tmp/$puppet_deb
-    
-    # check to install puppet agent
-    if [[ setup_agent -eq 1 ]] ; then
-        # install puppet
-        apt-get -y install puppet
+echo -e "\e[7mWhat are the nameservers you want to set for this VM? (Seperate with a space)\e[0m"
+read -p "> " NAMESERVERS
 
-        # set puppet master settings
-        sed -i "s@\[master\]@\
-# configure puppet master\n\
-server=$puppetmaster\n\
-report=true\n\
-pluginsync=true\n\
-\n\
-\[master\]@g" /etc/puppet/puppet.conf
+echo
 
-        # remove the deprecated template dir directive from the puppet.conf file
-        sed -i "/^templatedir=/d" /etc/puppet/puppet.conf
+echo -e "\e[7mPlease specify an new password for ${USERNAME}\e[0m"
+read -p "> " -s NEWPW
 
-        # download the finish script if it doesn't yet exist
-        if [[ ! -f $tmp/finish.sh ]]; then
-            echo -n " downloading finish.sh: "
-            cd $tmp
-            download "https://raw.githubusercontent.com/netson/ubuntu-unattended/master/finish.sh"
-        fi
+echo
+echo
 
-        # set proper permissions on finish script
-        chmod +x $tmp/finish.sh
+echo -e "\e[7mPlease re-enter the password\e[0m"
+read -p "> " -s NEWPW2
 
-        # connect to master and ensure puppet is always the latest version
-        echo " connecting to puppet master to request new certificate"
-        echo " please sign the certificate request on your puppet master ..."
-        puppet agent --waitforcert 60 --test
-        echo " once you've signed the certificate, please run finish.sh from your home directory"
+echo
+echo
 
-    fi
+while [ "${NEWPW}" != "${NEWPW2}" ];
+do
+ echo
+ echo -e "\e[41mPasswords do not match, please try again!\e[0m"
+ echo
+ echo -e "\e[7mPlease specify an new password for ${USERNAME}\e[0m"
+ read -p "> " -s NEWPW
+ echo
+ echo
+ echo -e "\e[7mPlease re-enter the password\e[0m"
+ read -p "> " -s NEWPW2
+ echo
+done
 
-fi
 
-# remove myself to prevent any unintended changes at a later stage
-rm $0
+# Adjust Hostname
+echo -ne "\e[36mAdjusting Hostname\e[0m"
+echo ${HOSTNAME} > /etc/hostname
+echo -e "\r\033[K\e[36mAdjusting Hostname ----- Complete\e[0m"
+
+# Adjust Hosts
+echo -ne "\e[36mAdjusting Hosts\e[0m"
+sed -i "2s/.*/127.0.1.1     ${HOSTNAME}.${DOMAIN}   ${HOSTNAME}/" /etc/hosts
+echo -e "\r\033[K\e[36mAdjusting Hosts ----- Complete\e[0m"
+
+# Set Static IP
+echo -ne "\e[36mSetting Static IP\e[0m"
+cat >"/etc/network/interfaces"<<EOF
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+auto ens160
+iface ens160 inet static
+address ${STATICIP}
+netmask ${NETMASK}
+gateway ${GATEWAY}
+dns-nameservers ${NAMESERVERS}
+# This is an autoconfigured IPv6 interface
+iface ens160 inet6 auto
+
+EOF
+echo -e "\r\033[K\e[36mSetting Static IP ----- Complete\e[0m"
+
+# Update Password
+echo -ne "\e[36mUpdating password for ${logname}\e[0m"
+echo '${logname}:${NEWPW}' | chpasswd
+echo -e "\r\033[K\e[36mUpdating password for ${logname} ----- Complete\e[0m"
+
+# Download SSH Key
+wget http://192.168.0.105/preseed/authorized_keys -O /home/${USER}/.ssh/authorized_keys >>/dev/null 
+
+echo -ne "\e[36mUpdating System - This may take awhile!\e[0m"
+sudo apt-get -y update >/dev/null && sudo apt-get -y upgrade >/dev/null 
+echo -e "\r\033[K\e[36mUpdating System ----- Complete\e[0m"
 
 # finish
-echo " DONE; rebooting ... "
+echo -e "\e[36mSetup Complete. Rebooting\e[0m"
 
 # reboot
 reboot
