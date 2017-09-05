@@ -114,9 +114,15 @@ echo -e "\r\033[K\e[36mUpdating password for ${logname} ----- Complete\e[0m"
 # Download SSH Key
 wget http://192.168.0.105/preseed/authorized_keys -O /home/${USER}/.ssh/authorized_keys >>/dev/null 
 
+# Updating && Upgrade
 echo -ne "\e[36mUpdating System - This may take awhile!\e[0m"
 sudo apt-get -y update >/dev/null && sudo apt-get -y upgrade >/dev/null 
 echo -e "\r\033[K\e[36mUpdating System ----- Complete\e[0m"
+
+# Install Open-VM-Tools
+echo -ne "\e[36mInstalling Open-VM-Tools\e[0m"
+apt-get install -y open-vm-tools >/dev/null 
+echo -e "\r\033[K\e[36mInstalling Open-VM-Tools ----- Complete\e[0m"\
 
 # finish
 echo -e "\e[36mSetup Complete. Rebooting\e[0m"
