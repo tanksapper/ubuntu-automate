@@ -6,6 +6,10 @@ d-i debian-installer/splash                                 boolean     false
 d-i localechooser/supported-locales                         multiselect en_US.UTF-8
 d-i pkgsel/install-language-support                         boolean     true
 
+# Keyboard Settings
+d-i console-setup/ask_detect                                boolean     false
+d-i keyboard-configuration/xkb-keymap                       select      us
+
 # Networking Settings
 d-i netcfg/choose_interface                                 select      auto
 d-i netcfg/dhcp_timeout                                     string      5
