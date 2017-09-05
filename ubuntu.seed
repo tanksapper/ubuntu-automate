@@ -61,8 +61,8 @@ d-i debian-installer/quiet                                  boolean     false
 d-i debian-installer/splash                                 boolean     false
 
 # Install Packages
-d-i tasksel/first                                           select      openssh-server
-d-i pkgsel/include                                          string      openssh-server ntp
+tasksel tasksel/first                                       multiselect openssh-server, standard
+d-i pkgsel/include                                          string      openssh-server build-essential
 d-i pkgsel/install-language-support                         boolean     false
 d-i pkgsel/upgrade                                          select      none
 d-i pkgsel/update-policy                                    select      none
