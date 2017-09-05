@@ -1,6 +1,6 @@
 #!/bin/bash
 
-USER=${logname}
+USER=$(logname)
 
 clear
 
@@ -44,7 +44,7 @@ read -p "> " NAMESERVERS
 
 echo
 
-echo -e "\e[7mPlease specify an new password for ${USERNAME}\e[0m"
+echo -e "\e[7mPlease specify an new password for ${USER}\e[0m"
 read -p "> " -s NEWPW
 
 echo
@@ -61,7 +61,7 @@ do
  echo
  echo -e "\e[41mPasswords do not match, please try again!\e[0m"
  echo
- echo -e "\e[7mPlease specify an new password for ${USERNAME}\e[0m"
+ echo -e "\e[7mPlease specify an new password for ${USER}\e[0m"
  read -p "> " -s NEWPW
  echo
  echo
