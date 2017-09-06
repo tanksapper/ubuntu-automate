@@ -108,11 +108,12 @@ echo -e "\r\033[K\e[36mSetting Static IP ----- Complete\e[0m"
 
 # Update Password
 echo -ne "\e[36mUpdating password for ${logname}\e[0m"
-echo '${logname}:${NEWPW}' | chpasswd
+echo ${USER}:"${NEWPW}" | chpasswd
 echo -e "\r\033[K\e[36mUpdating password for ${logname} ----- Complete\e[0m"
 
 # Download SSH Key
-wget http://192.168.0.105/preseed/authorized_keys -O /home/${USER}/.ssh/authorized_keys >>/dev/null 
+mkdir /home/${USER}/.ssh
+wget http://192.168.0.105/preseed/authorized_keys -O /home/${USER}/.ssh/authorized_keys >/dev/null 
 
 # Updating && Upgrade
 echo -ne "\e[36mUpdating System - This may take awhile!\e[0m"
