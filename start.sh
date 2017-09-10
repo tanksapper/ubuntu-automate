@@ -125,6 +125,11 @@ echo -ne "\e[36mInstalling Open-VM-Tools\e[0m"
 apt-get install -y open-vm-tools >/dev/null 
 echo -e "\r\033[K\e[36mInstalling Open-VM-Tools ----- Complete\e[0m"\
 
+# Install Other Software
+echo -ne "\e[36mInstalling Open-VM-Tools\e[0m"
+apt-get install -y curl python3 >/dev/null 
+echo -e "\r\033[K\e[36mInstalling Other Software ----- Complete\e[0m"\
+
 # finish
 echo -e "\e[36mSetup Complete. Rebooting\e[0m"
 
