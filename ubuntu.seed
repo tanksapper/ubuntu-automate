@@ -75,9 +75,6 @@ d-i pkgsel/upgrade                                          select      none
 d-i pkgsel/update-policy                                    select      none
 d-i pkgsel/updatedb                                         boolean     true
 
-d-i preseed/late_command string \
-in-target sh -c "sed -i '20s/.*/GRUB_TERMINAL=console/' /etc/default/grub; update-grub"
-
 # No multiarch by default
 d-i apt-setup/multiarch                                     string
 
