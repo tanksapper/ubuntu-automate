@@ -64,7 +64,7 @@ d-i partman-partitioning/confirm_write_new_label            boolean     true
 
 d-i base-installer/kernel/image                             string      linux-generic
 d-i debian-installer/quiet                                  boolean     false
-d-i debian-installer/splash                                 boolean     true
+d-i debian-installer/splash                                 boolean     false
 
 # Install Packages
 tasksel tasksel/first                                       multiselect openssh-server, standard
