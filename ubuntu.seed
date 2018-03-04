@@ -69,7 +69,7 @@ d-i debian-installer/splash                                 boolean     false
 # Install Packages
 tasksel tasksel/first                                       multiselect openssh-server, standard
 # Install additional Packages
-d-i pkgsel/include                                          string      openssh-server build-essential curl git software-properties-common
+d-i pkgsel/include                                          string      openssh-server build-essential curl git open-vm-tools software-properties-common
 d-i pkgsel/install-language-support                         boolean     false
 d-i pkgsel/upgrade                                          select      none
 d-i pkgsel/update-policy                                    select      none
