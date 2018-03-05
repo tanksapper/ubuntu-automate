@@ -184,7 +184,7 @@ fi
 SEED_FILE="ubuntu.seed"
 if [[ ! -f ${TMP}/${SEED_FILE} ]]; then
     echo -ne "\e[36mDownloading - ${SEED_FILE}\e[0m"
-    download "https://git.cyanlab.io/tylerhammer/ubuntu-automated-install/raw/master/ubuntu.seed"
+    download "https://github.com/tanksapper/ubuntu-automate/blob/master/ubuntu.seed"
 fi
 
 # Install required packages
